@@ -1,6 +1,6 @@
 #cib/sfrmodel.py
 
-from .registry import get_sfr_model
+from .default_sfr import sfr_default
 from .utils import _compute_BAR_grid
 
 class SFRModel:
@@ -29,7 +29,7 @@ class SFRModel:
         self.BAR_grid = _compute_BAR_grid(cosmo=self.cosmo,
                                           Mh=self.Mh)[0] # (1, NMh, Nz)
         
-        self.model_factory = get_sfr_model(name)
+        self.model_factory = sfr_default
         self.model_fn = self.model_factory(self.BAR_grid, self.z_ratio)
         
     def __call__(self, theta_sfr):

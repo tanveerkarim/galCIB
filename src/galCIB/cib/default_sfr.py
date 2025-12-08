@@ -5,7 +5,6 @@ Contains the default SFR model based on 2006.16329
 """
 
 import numpy as np
-from .registry import register_sfr_model
 from galCIB.galaxy.utils import evolving_log_mass
 
 def sfr_default(BAR_grid, z_ratio):
@@ -67,12 +66,3 @@ def sfr_default(BAR_grid, z_ratio):
         return eta_vals * BAR_grid
     
     return sfr_model
-
-
-def register_default_sfr_models():
-    """
-    Register the default SFR model using the default eta_fn.
-    You must pass BAR and z_ratio later to complete the factory.
-    """
-    # We register the factory, not the final SFR model
-    register_sfr_model("M21", sfr_default)

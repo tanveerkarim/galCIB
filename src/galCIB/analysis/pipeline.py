@@ -1,10 +1,12 @@
-#from galCIB.galaxy import get_hod_model
 from scipy.integrate import simpson
 import numpy as np 
 
+from galCIB.utils import get_color_correction
 from .utils import bin_mat
 
+
 class AnalysisModel:
+
     def __init__(self, survey, pk3d, bin_cl=False):
         """
         Initializes the model with fixed cosmology and survey properties.
@@ -31,9 +33,9 @@ class AnalysisModel:
         self.Nnu = len(self.survey.nu_obs)
         self.Nnu_comb = self.Nnu * (self.Nnu + 1)//2
         
-        self.cc_gI = np.array([self._get_color_correction(nu)for nu in self.survey.nu_obs])
+        self.cc_gI = np.array([get_color_correction(nu) for nu in self.survey.nu_obs])
         self.cc_II = np.array([
-            self._get_color_correction(nu1) * self._get_color_correction(nu2)
+            get_color_correction(nu1) * get_color_correction(nu2)
             
             for i, nu1 in enumerate(self.survey.nu_obs)
             for j, nu2 in enumerate(self.survey.nu_obs)
@@ -80,29 +82,10 @@ class AnalysisModel:
             Wy : Window of Y
         """
         
-        integrand = self.geom_factor*Wx*Wy*pkz_xy
-        cl = simpson(integrand,x=self.survey.z,axis=-1)
-        
-        return cl
-    
-    def _get_color_correction(self, f_obs):
-        """
-        Returns color correction multiplicative factor
-        on CIB. 
-        
-        Each power of nu gets one cc_pl value
-        """
-        
-        cc_pl = {}
-        cc_pl[100] = 1.076
-        cc_pl[143] = 1.017
-        cc_pl[217] = 1.119
-        cc_pl[353] = 1.097
-        cc_pl[545] = 1.068
-        cc_pl[857] = 0.995
-        
-        return cc_pl[f_obs]
-    
+        integrand = self.geom_factor * Wx * Wy * pkz_xy
+        return simpson(integrand, x=self.survey.z, axis=-1)
+
+
     def _cache_cl_mumu(self):
         """
         Calculates the auto-power of mag bias. 
@@ -111,16 +94,10 @@ class AnalysisModel:
         only calculated once and can be cached. 
         """
         
-        pmumu = self.pk.pk_mumu_2h
-        
-        # interpolate on the ell-to-k grid
-        pmumu_int = self._kPk_interpolator(pmumu)
-    
-        # compute C_ell 
-        Cmumu = self.compute_cl(pmumu_int, self.Wmu, self.Wmu)
-        
-        return Cmumu
-    
+        pmumu_interp = self._kPk_interpolator(self.pk.pk_mumu_2h)
+        return  self.compute_cl(pmumu_interp, self.Wmu, self.Wmu)
+
+
     def update_cl(self, theta_cen=None, theta_sat=None,
                   theta_gal_prof=None, theta_cib_prof=None,
                   theta_sfr=None, theta_snu=None, theta_IR_hod=None,

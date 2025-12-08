@@ -1,7 +1,7 @@
 #cib/snumodel.py
 import numpy as np
 from scipy.integrate import simpson
-from .registry import get_snu_model
+from .default_snu import get_snu_factory
 
 class SnuModel:
     def __init__(self, 
@@ -23,7 +23,7 @@ class SnuModel:
         self.model_fn = self._build_model(name, m21_fdata)
 
     def _build_model(self, name, data_dir):
-        factory = get_snu_model(name)
+        factory = get_snu_factory(name)
         if name == "Y23":
             return factory(self.nu_prime, self.z)
         elif name == "M21":

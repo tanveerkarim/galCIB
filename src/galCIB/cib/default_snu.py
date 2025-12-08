@@ -8,7 +8,6 @@ Y23 : Parametric model inspired by S12.
 import numpy as np 
 from astropy.io import fits
 
-from .registry import register_snu_model 
 from scipy.special import lambertw
 from scipy.interpolate import CubicSpline
 
@@ -203,6 +202,10 @@ def snu_M21_factory(selected_freqs, cosmo, fdata="../data/filtered_snu_planck.fi
 
     return snu_M21
 
-def register_default_snu_models():
-    register_snu_model("Y23", snu_Y23_factory)
-    register_snu_model("M21", snu_M21_factory)
+_SNU_FACTORIES = {
+    "Y23": snu_Y23_factory,
+    "M21": snu_M21_factory,
+    }
+
+def get_snu_factory(name):
+    return _SNU_FACTORIES[name]

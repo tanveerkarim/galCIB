@@ -6,8 +6,8 @@ Includes DESI ELG mHMQ, GHOD and Zheng05 models.
 import numpy as np
 from scipy.special import erf
 
+from .hodmodel import HODModel
 from .utils import evolving_log_mass
-from .registry import register_hod_model, is_model_registered
 
 def Ncen_mHMQ(log10_Mh, theta):
     """
@@ -98,7 +98,7 @@ def Nsat_Z05(Mh, theta, z_over_1plusz=None, **kwargs):
     return Nsat 
         
 # ===
-
+# TODO: Could just put this as a classmethod on HODModel
 # Store default params for each model here
 _default_hod_params = {
     "Zheng05": dict(
@@ -119,6 +119,5 @@ _default_hod_params = {
     ),
 }
 
-for name, params in _default_hod_params.items():
-    if not is_model_registered(name):
-        register_hod_model(name=name, **params)
+def get_hod_model(name, cosmo):
+    return HODModel(name=name, cosmo=cosmo, **_default_hod_params[name])
