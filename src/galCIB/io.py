@@ -2,6 +2,7 @@ import os
 import re
 import numpy as np
 
+
 def load_my_filters(filter_dir, nu_obs=None):
     """
     Load a subset of Planck filters from directory using regex pattern matching.
@@ -36,8 +37,8 @@ def load_my_filters(filter_dir, nu_obs=None):
         filepath = os.path.join(filter_dir, fname)
         data = np.loadtxt(filepath, comments="#")
 
-        freq_ghz = data[:,1]  # freq column in GHz
-        response = data[:,2]  # normalized response column
+        freq_ghz = data[:, 1]  # freq column in GHz
+        response = data[:, 2]  # normalized response column
         freq_hz = freq_ghz * 1e9  # convert GHz to Hz
 
         filters[freq] = (freq_hz, response)

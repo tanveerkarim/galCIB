@@ -1,17 +1,7 @@
-#cib/__init__.py
-from . import default_sfr, default_snu
-
-from .registry import (
-    get_sfr_model,
-    get_snu_model,
-    register_sfr_model,
-    register_snu_model,
-)
-
+# cib/__init__.py
+from .default_snu import get_snu_factory
 from .cibmodel import CIBModel
 from .sfrmodel import SFRModel
 from .snumodel import SnuModel
 
-__all__ = ["get_sfr_model", "get_snu_model",
-           "register_sfr_model", "register_snu_model",
-           "CIBModel", "SFRModel", "SnuModel"]
+__all__ = ["get_snu_factory", "CIBModel", "SFRModel", "SnuModel"]

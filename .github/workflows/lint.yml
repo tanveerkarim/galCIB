@@ -27,8 +27,8 @@ jobs:
         python-version: ${{ env.PYTHON_VERSION }}
 
     - name: Lint
-      run: uv run --dev ruff check src/
+      run: uv run --dev ruff check src test
       continue-on-error: true
 
     - name: Format Check
-      run: uv run --dev ruff format --check --diff src/
+      run: uv run --dev ruff format --check --diff src test

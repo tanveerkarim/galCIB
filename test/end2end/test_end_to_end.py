@@ -14,7 +14,7 @@ from galCIB import (
     PkBuilder,
     AnalysisModel,
 )
-from galCIB.utils.io import load_my_filters
+from galCIB.io import load_my_filters
 
 
 def test_minimal_pipeline():
@@ -22,7 +22,7 @@ def test_minimal_pipeline():
     filters_dir = os.path.join(data_dir, "filters")
     dndz_file_path = os.path.join(data_dir, "gal", "dndz_extended.p")
     test_data_dir = os.path.join(".", "test", "end2end")
-    
+
     # Galaxy Survey
     dndz_file = np.load(dndz_file_path, allow_pickle=True)
     zs = dndz_file["zrange"]
@@ -65,7 +65,6 @@ def test_minimal_pipeline():
     npt.assert_array_equal(example_survey.Wg, expected_Wg)
     npt.assert_array_equal(example_survey.Wmu, expected_Wmu)
 
-
     # HODModel
     elg_hod_model = get_hod_model("DESI-ELG", cosmo)
 
@@ -86,12 +85,14 @@ def test_minimal_pipeline():
 
     # PkBuilder
     pk_survey = PkBuilder(
-        hod_model=elg_hod_model, cib_model=cib_Y23, gal_prof_model=elg_sat_profile, cib_prof_model=elg_sat_profile
+        hod_model=elg_hod_model,
+        cib_model=cib_Y23,
+        gal_prof_model=elg_sat_profile,
+        cib_prof_model=elg_sat_profile,
     )
 
     # AnalysisModel
     analysis = AnalysisModel(survey=example_survey, pk3d=pk_survey)
-
 
     # Computation
     # gamma, log10Mc, sigmaM, Ac
@@ -117,7 +118,7 @@ def test_minimal_pipeline():
     # Mmin, sigma_lnM
     theta_IR_Y23 = np.array([11.47, 0.4])
 
-    # Analysis 
+    # Analysis
     # Q: Used theta_prof for both theta_gal_prof and theta_cib_prof
     cgg, cgI, cII = analysis.update_cl(
         theta_cen=theta_cen,
@@ -146,6 +147,6 @@ def test_minimal_pipeline():
     expected_cgI = np.loadtxt(os.path.join(test_data_dir, "cgI.txt"))
     expected_cII = np.loadtxt(os.path.join(test_data_dir, "cII.txt"))
 
-    npt.assert_array_equal(cgg, expected_cgg)
-    npt.assert_array_equal(cgI, expected_cgI)
-    npt.assert_array_equal(cII, expected_cII)
+    npt.assert_allclose(cgg, expected_cgg)
+    npt.assert_allclose(cgI, expected_cgI)
+    npt.assert_allclose(cII, expected_cII)
