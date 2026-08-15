@@ -212,7 +212,7 @@ def compute_PgI_1h(pkobj):
     
     return Pk_1h
 
-def compute_Puv_tot(pk2h, pk1h, hmalpha=1):
+def compute_Puv_tot(pk1h, pk2h, hmalpha=1):
     """
     Returns the total P(k) of the fields U and V.
     
@@ -220,6 +220,9 @@ def compute_Puv_tot(pk2h, pk1h, hmalpha=1):
     
     P_tot = (pk2h^alpha + pk1h^alpha)^(1/alpha)
     """
-    P_tot = (pk1h**hmalpha + pk2h**hmalpha)**1/hmalpha
-    
+    # NOTE: the parentheses matter -- `x**1/hmalpha` parses as `(x**1)/hmalpha`
+    # because ** binds tighter than /. That happened to be correct only at
+    # hmalpha == 1; analysis/theory.py passes 0.7.
+    P_tot = (pk1h**hmalpha + pk2h**hmalpha) ** (1.0 / hmalpha)
+
     return P_tot

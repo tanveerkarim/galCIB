@@ -29,7 +29,13 @@ def sfr_default(BAR_grid, z_ratio):
         # Mpeak evolving as a func. of z 
         #Mpeak_z = 10**evolving_log_mass(mu0_peak, mup_peak, z_ratio)
         Mpeak_z = 10**log10Mpeak
-        # 2.39 of 2310.10848
+        # M21 / DopplerCIB form (CIB_halo.py:56-57), which this code reproduces:
+        #     sigma_high(z) = sigmaM0 - tau * max(zc - z, 0)
+        # NOT Eq. 2.39 of 2310.10848, which is
+        #     sigmaM0 * (1 - tau/zc * max(zc - z, 0))
+        # The paper deliberately reparametrised to keep sigma_M positive under
+        # MCMC (their footnote 8). Kept on the M21 form since DopplerCIB is the
+        # validation reference.
         sigmaM_z = sigmaM0 - tau * np.maximum(0, zc - z)              # (Nz,)
         
         # sigmaM_z = np.where(M < Mpeak_z, sigmaM0, 

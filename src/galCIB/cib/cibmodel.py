@@ -71,14 +71,16 @@ class CIBModel:
         
     def _compute_subhalo_mf(self):
         
-        if self.subhalo_mf is None: 
+        # NOTE: m_over_M must be bound outside the `if`, otherwise passing a
+        # custom subhalo_mf raises UnboundLocalError.
+        m_over_M = self.m_sub_grid/self.cosmo.Mh
+
+        if self.subhalo_mf is None:
             """
             Default based on 10 of 0909.1325.
             """
-            m_over_M = self.m_sub_grid/self.cosmo.Mh
-            
             self.subhalo_mf = lambda m_over_M : 0.3 * m_over_M**-0.7 * np.exp(-9.9 * m_over_M**2.5) * np.log(10)
-        
+
         return self.subhalo_mf(m_over_M)
         
             

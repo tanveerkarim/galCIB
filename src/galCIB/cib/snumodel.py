@@ -16,10 +16,13 @@ class SnuModel:
         self.survey = survey
         self.cosmo = cosmo 
         self.z = self.cosmo.z
-        if nu_prime is not None: 
+        if nu_prime is not None:
             self.nu_prime = nu_prime
+            # nu_prime = nu_obs*(1+z); recover the observed grid it came from.
+            self.nu_obs_grid = np.asarray(nu_prime) / (1 + self.z) \
+                if np.ndim(nu_prime) == 2 else np.asarray(nu_prime)
         else:
-            self.nu_prime = self._generate_nu_prime_grid() # (Nnu, Nz)
+            self.nu_prime, self.nu_obs_grid = self._generate_nu_prime_grid()
         self.model_fn = self._build_model(name, m21_fdata)
 
     def _build_model(self, name, data_dir):
@@ -34,8 +37,25 @@ class SnuModel:
     def __call__(self, theta_snu):
         if self.name == 'Y23':
             snu_unfilt = self.model_fn(theta_snu)
-            self.snu_eff = self.apply_filter_to_sed(sed=snu_unfilt.T, 
-                                            freq_sed=self.nu_prime.T)
+            # The SED is evaluated at nu_prime = nu_obs*(1+z), so row i of
+            # snu_unfilt corresponds to OBSERVED frequency nu_obs[i]. Planck
+            # bandpasses are defined in the observed frame, so the integration
+            # abscissa must be nu_obs -- using nu_prime applies (1+z) the wrong
+            # way and returns the SED at nu_filt/(1+z).
+            nu_obs = np.asarray(self.nu_obs_grid)
+            if nu_obs.ndim == 1:
+                nu_obs = np.tile(nu_obs, (len(self.z), 1))   # (Nz, Nwv)
+            else:
+                nu_obs = nu_obs.T
+            self.snu_eff = self.apply_filter_to_sed(sed=snu_unfilt.T,
+                                                    freq_sed=nu_obs)
+            # Eq. 2.43 of 2310.10848:
+            #   S_eff[(1+z)nu, z] ∝ Theta[(1+z)nu, z] / (chi^2 (1+z))
+            # CIBModel._compute_djc multiplies by chi^2(1+z)/K, so without this
+            # the Y23 emissivity carries a spurious chi^2(1+z) in z. The legacy
+            # DopplerCIB code divided it out explicitly (clustering/cib.py::Seff).
+            self.snu_eff = self.snu_eff / (
+                self.cosmo.chi**2 * (1 + self.z))[None, :]
             
         elif self.name == 'M21':
             self.snu_eff = self.model_fn(theta_snu)
@@ -52,10 +72,9 @@ class SnuModel:
         calculates SED as a function of nu. 
         """
         
-        import numpy as np
         ghz = 1e9
-        nu = np.linspace(1e2, 4e3, 10000) * ghz
-        return nu[:,None] * (1 + self.z)[None,:] # (Nnu, Nz)
+        nu = np.linspace(1e2, 4e3, 10000) * ghz          # observed frame, Hz
+        return nu[:, None] * (1 + self.z)[None, :], nu   # (Nnu, Nz), (Nnu,)
     
     
     def apply_filter_to_sed(self, sed, freq_sed):

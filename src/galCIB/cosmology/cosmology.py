@@ -171,21 +171,22 @@ class Cosmology:
         return self.hmf_grid
     
     def get_k_range(self, use_little_h):
-        
-        if use_little_h is False:
-            res = self.k * self.cosmo.h
+        """k on the requested convention. self.k follows self.use_little_h;
+        internally colossus is fed k/h and M*h (see _load_colossus)."""
+        if use_little_h:
+            res = self.k / self.cosmo.h   # 1/Mpc -> h/Mpc
         else:
             res = self.k
-            
-        return res 
-    
+
+        return res
+
     def get_Mh_range(self, use_little_h):
-        
-        if use_little_h is False:
-            res = self.Mh/self.cosmo.h
+        """Halo mass on the requested convention (see get_k_range)."""
+        if use_little_h:
+            res = self.Mh * self.cosmo.h  # Msun -> Msun/h
         else:
-            res = self.Mh 
-            
+            res = self.Mh
+
         return res
     
     def save_grids(self, filename):

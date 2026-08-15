@@ -5,7 +5,7 @@ import numpy as np
 from .utils import bin_mat
 
 class AnalysisModel:
-    def __init__(self, survey, pk3d, bin_cl=False):
+    def __init__(self, survey, pk3d, bin_cl=False, limber_offset=0.5):
         """
         Initializes the model with fixed cosmology and survey properties.
 
@@ -20,6 +20,9 @@ class AnalysisModel:
         self.pk = pk3d
         self.cosmo = self.pk.cosmo
         self.bin_cl=bin_cl # if to bin Cl
+        # Limber wavenumber k = (ell + limber_offset)/chi. 0.5 is the extended
+        # Limber default; set 0.0 to reproduce DopplerCIB, which uses k = ell/chi.
+        self.limber_offset = limber_offset
         
         self.geom_factor = self.cosmo.geom_factor
         self.Wg = survey.Wg
@@ -57,7 +60,7 @@ class AnalysisModel:
             Pk_grid : (Nell, Nz)
         """
         
-        self.kz_grid = (self.survey.ells[:,np.newaxis]+0.5)/self.cosmo.chi[np.newaxis,:]
+        self.kz_grid = (self.survey.ells[:,np.newaxis]+self.limber_offset)/self.cosmo.chi[np.newaxis,:]
         
         # interpolate pk 
         

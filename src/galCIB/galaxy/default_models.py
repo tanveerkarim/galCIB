@@ -68,11 +68,18 @@ def Nsat_ELG(Mh, theta):
     """
     
     As, M0, M1, alpha_sat = theta
-    
-    # if Mh - M0 < 0, then Nsat = 0
-    Nsat = np.where(Mh-M0 < 0, 0, As * ((Mh-M0)/M1)**alpha_sat)
-    
-    return Nsat 
+
+    # np.where evaluates BOTH branches, so ((Mh-M0)/M1)**alpha_sat used to be
+    # computed for Mh <= M0 as well. With alpha_sat < 0 (the DESI-ELG fiducial
+    # is -0.198) that gives 0**negative -> inf, and for non-integer alpha_sat a
+    # negative base gives nan. The mask discarded them, but it raised
+    # RuntimeWarnings and would surface as inf/nan under a sampler exploring M0.
+    # Substitute a safe placeholder base before exponentiating.
+    dM = Mh - M0
+    base = np.where(dM > 0, dM, 1.0) / M1
+    Nsat = np.where(dM > 0, As * base**alpha_sat, 0.0)
+
+    return Nsat
 
 def Nsat_Z05(Mh, theta, z_over_1plusz=None, **kwargs):
     
